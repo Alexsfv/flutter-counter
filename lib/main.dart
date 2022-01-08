@@ -1,139 +1,208 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
-const Color counterColor = Colors.white;
+Color mainColor = Colors.red.shade400;
+Color textColor = Colors.white;
+Color textColorLite = Colors.white70;
 
-void main() => runApp(AppWidget());
+void main() => runApp(MyApp());
 
-class AppWidget extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(context) {
     return MaterialApp(
-      theme: ThemeData(fontFamily: 'Oxygen'),
       home: Scaffold(
-        appBar: Header(),
-        body: Body(),
+        backgroundColor: mainColor,
+        appBar: _appBar(),
+        body: _appBody(),
       ),
     );
   }
 }
 
-class Header extends StatelessWidget implements PreferredSizeWidget {
-  @override
-  build(context) {
-    return AppBar(
+AppBar _appBar() => AppBar(
+      backgroundColor: mainColor,
       centerTitle: true,
-      backgroundColor: Colors.indigo[600],
+      elevation: 0,
       title: Text(
-        'Counter',
+        'Weather Forecast',
+        style: TextStyle(
+          color: textColor,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+
+Widget _appBody() => SingleChildScrollView(
+      padding: EdgeInsets.all(12),
+      child: Column(
+        children: [
+          Finder(),
+          Position(),
+          _weekDay(),
+          WeatherStatus(),
+          _weatherParameters(),
+          _weatherForecast(),
+        ],
+      ),
+    );
+
+Widget _weekDay() => Container(
+      margin: EdgeInsets.only(top: 12),
+      child: Text(
+        'Friday, Mar 20, 2022',
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: textColorLite,
+          fontSize: 18,
+        ),
+      ),
+    );
+
+Widget _weatherParameters() => Container(
+      margin: EdgeInsets.only(top: 40),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          WeatherParameter(
+            icon: Icons.ac_unit,
+            value: '5',
+            parameter: 'km/h',
+          ),
+          WeatherParameter(
+            icon: Icons.ac_unit,
+            value: '3',
+            parameter: '%',
+          ),
+          WeatherParameter(
+            icon: Icons.ac_unit,
+            value: '20',
+            parameter: '%',
+          ),
+        ],
+      ),
+    );
+
+Widget _weatherForecast() => Container(
+      margin: EdgeInsets.only(top: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            margin: EdgeInsets.only(bottom: 15),
+            child: Text(
+              '7-day weather forecast'.toUpperCase(),
+              style: TextStyle(
+                color: textColorLite,
+                fontSize: 18,
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 100,
+            child: ListView.separated(
+              padding: EdgeInsets.only(right: 100),
+              scrollDirection: Axis.horizontal,
+              itemCount: 7,
+              itemBuilder: (context, index) {
+                return ForecastItem();
+              },
+              separatorBuilder: (context, index) {
+                return SizedBox(
+                  width: 1,
+                );
+              },
+            ),
+          )
+        ],
+      ),
+    );
+
+class Finder extends StatelessWidget {
+  @override
+  Widget build(context) {
+    return Row(
+      children: [
+        Icon(
+          Icons.search_outlined,
+          color: textColor,
+        ),
+        Container(
+          padding: EdgeInsets.only(left: 10),
+          child: Text(
+            'Enter City Name',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class Position extends StatelessWidget {
+  @override
+  Widget build(context) {
+    double horizontalPadding = 30;
+
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.only(top: 30),
+      padding:
+          EdgeInsets.only(left: horizontalPadding, right: horizontalPadding),
+      child: FittedBox(
+        fit: BoxFit.fitWidth,
+        child: Text(
+          'Kurganskaya Oblast, RU',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: textColor,
+          ),
         ),
       ),
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(60);
 }
 
-class Body extends StatelessWidget {
+class WeatherStatus extends StatelessWidget {
   @override
   Widget build(context) {
     return Container(
-      color: Colors.deepPurple[600],
-      width: MediaQuery.of(context).size.width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      margin: EdgeInsets.only(top: 40),
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CounterText(
-            key: Key('tp-ct-text'),
-            text: 'Tap "-" to descrement',
+          Container(
+            margin: EdgeInsets.only(right: 20),
+            child: Icon(
+              Icons.wb_sunny,
+              color: textColor,
+              size: 90,
+            ),
           ),
-          Counter(),
-          CounterText(
-            key: Key('bt-ct-text'),
-            text: 'Tap "+" to increment',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class Counter extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return _CounterState();
-  }
-}
-
-class _CounterState extends State<Counter> {
-  int _count = 0;
-
-  _handleDecrement() {
-    setState(() {
-      _count--;
-    });
-  }
-
-  _handleIncrement() {
-    setState(() {
-      _count++;
-    });
-  }
-
-  @override
-  build(contenxt) {
-    return Container(
-      child: Flex(
-        direction: Axis.horizontal,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CounterButton(
-            isLeftRounded: true,
-            src: 'assets/icons/minus.svg',
-            onPressed: _handleDecrement,
-          ),
-          CounterField(
-            key: Key('1'),
-            value: _count,
-          ),
-          CounterButton(
-            isRightRounded: true,
-            src: 'assets/icons/plus.svg',
-            onPressed: _handleIncrement,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CounterField extends StatelessWidget {
-  int value = 0;
-
-  CounterField({Key? key, required this.value}) : super(key: key);
-
-  @override
-  Widget build(context) {
-    return Container(
-      width: 40,
-      height: 40,
-      color: counterColor,
-      child: Flex(
-        direction: Axis.vertical,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '$value',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+          Column(
+            children: [
+              Text(
+                '14 °F',
+                style: TextStyle(
+                  color: textColorLite,
+                  fontSize: 64,
+                  fontWeight: FontWeight.w100,
+                ),
+              ),
+              Text(
+                'Light snow'.toUpperCase(),
+                style: TextStyle(
+                  color: textColorLite,
+                  fontSize: 20,
+                ),
+              )
+            ],
           )
         ],
       ),
@@ -141,65 +210,89 @@ class CounterField extends StatelessWidget {
   }
 }
 
-class CounterText extends StatelessWidget {
-  final String text;
+class WeatherParameter extends StatelessWidget {
+  IconData icon;
+  String parameter;
+  String value;
 
-  const CounterText({Key? key, required this.text}) : super(key: key);
+  WeatherParameter({
+    Key? key,
+    required this.icon,
+    required this.parameter,
+    required this.value,
+  });
 
   @override
   Widget build(context) {
-    return Container(
-      width: 170,
-      padding: EdgeInsets.all(10),
-      child: FittedBox(
-          fit: BoxFit.contain,
-          child: Text(
-            text,
-            textAlign: TextAlign.justify,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
-            ),
-          )),
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 10),
+          child: Icon(
+            icon,
+            color: textColor,
+            size: 30,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: textColorLite,
+            fontSize: 22,
+          ),
+        ),
+        Text(
+          parameter,
+          style: TextStyle(
+            color: textColorLite,
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class CounterButton extends StatelessWidget {
-  void Function()? onPressed;
-  bool isRightRounded = false;
-  bool isLeftRounded = false;
-  String src;
-
-  CounterButton({
-    Key? key,
-    required this.src,
-    required this.onPressed,
-    this.isRightRounded = false,
-    this.isLeftRounded = false,
-  }) : super(key: key);
-
+class ForecastItem extends StatelessWidget {
   @override
   Widget build(context) {
-    const double size = 40;
-    const double radius = 6;
-
     return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-          color: counterColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(isLeftRounded ? radius : 0),
-            topRight: Radius.circular(isRightRounded ? radius : 0),
-            bottomRight: Radius.circular(isRightRounded ? radius : 0),
-            bottomLeft: Radius.circular(isLeftRounded ? radius : 0),
-          )),
-      child: IconButton(
-        onPressed: onPressed,
-        icon: SvgPicture.asset(src),
-        splashColor: Colors.red,
-        hoverColor: Colors.red,
+      width: 140,
+      margin: EdgeInsets.only(right: 10),
+      padding: EdgeInsets.all(10),
+      color: Colors.white30,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Text(
+            'Friday',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 24,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '6 °F',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 26,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Icon(
+                  Icons.ac_unit,
+                  size: 30,
+                  color: textColor,
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }
